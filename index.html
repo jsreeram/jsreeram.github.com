@@ -8,7 +8,7 @@
 
         <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-        <title>Jsreeram.github.com</title>
+        <title>River Trail</title>
         <script type="text/javascript">
             var fixGistRules = [
             ".gist .gist-highlight {  border-left: 3ex solid #eee;  position: relative;}",
@@ -45,7 +45,7 @@ for ( var i=0; i< rules.length; i++ ){
           <header class="inner">
           <a id="forkme_banner" href="https://github.com/jsreeram">View on GitHub</a>
 
-          <h1 id="project_title">Jsreeram.github.com</h1>
+          <h1 id="project_title">Getting Started with River Trail</h1>
           <h2 id="project_tagline">jsreeram.github.com</h2>
 
           </header>
@@ -54,20 +54,80 @@ for ( var i=0; i< rules.length; i++ ){
       <!-- MAIN CONTENT -->
       <div id="main_content_wrap" class="outer">
           <section id="main_content" class="inner">
-          <h3>Welcome to GitHub Pages.</h3>
 
-          <p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
+
+
+          <h1>Motivation and Background</h1>
+
+          <p>The goal of Intel Lab's River Trail project is to enable
+          data-parallelism in web applications. In a world where the web
+          browser is the user's window into computing, browser applications
+          must leverage all available computing resources to provide the best
+          possible user experience. Today web applications do not take full
+          advantage of parallel client hardware due to the lack of appropriate
+          programming models. River Trail puts the parallel compute power of
+          client's hardware into the hands of the web developer while staying
+          within the safe and secure boundaries of the familiar JavaScript
+          programming paradigm. River Trail gently extends JavaScript with
+          simple deterministic data-parallel constructs that are translated at
+          runtime into a low-level hardware abstraction layer. By leveraging
+          multiple CPU cores and vector instructions, River Trail programs can achieve significant speedup over sequential JavaScript.</p>
+
+          <p>See the <a
+              href="https://github.com/RiverTrail/RiverTrail/wiki">wiki</a> for
+          instructions on installing River Trail </p>
+
+          <h1>Basic Concepts</h1>
+          <h2>
+              Deterministic Parallel Execution
+          </h2>
+          <h2>The <em>ParallelArray</em> type</h2>
+          <!--<h1>API</h1>-->
+          <p>
+          The central component of River Trail is the <em>ParallelArray</em>
+          type. ParallelArray's are, at a high-level like Java Script arrays -
+          ordered collections of things. Just like Java Script arrays,
+          ParallelArrays can contain other objects - other ParallelArrays, Java
+          Script arrays or other Java Script objects. But they differ from Java
+          Script arrays in a few important ways. ParallelArrays are:
+          <ul>
+              <li><b>Multi-Dimensional</b></li>
+              <li><b>Immutable</b></li>
+          </ul>
+          </p>
+          <h2> Constructors </h2>
+          <p>
+          <script
+              src="http://gist.github.com/3299719.js"></script>
+          </p>
+          <h2>Elemental functions</h2>
+          <h2> Methods </h2>
+          ParallelArray objects created with the above constructors come with several methods to
+          manipulate them. These methods typically produce a new ParallelArray
+          object (except the <em>reduce()</em> method which we will see in a
+          moment).
+        
+          <h3> Map </h3>
+          <h3> Reduce </h3>
+          <h3> Scatter </h3>
+          <h3> Filter </h3>
+          <h3> Scan </h3>
+
+          <h2> Examples </h2>
+          <h1> Lets build a web-app </h1>
+
+          <!--
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
 $ git checkout gh-pages
 </code></pre>
-          <p>
-          <script
-                  src="http://gist.github.com/3299719.js"></script>
-          </p>
+          -->
+
+          <!--
           <p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
 
+          <h1>Designer Templates</h1>
           <h3>Designer Templates</h3>
 
           <p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
@@ -83,6 +143,8 @@ $ git checkout gh-pages
           <h3>Support or Contact</h3>
 
           <p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+
+          -->
           </section>
       </div>
 
