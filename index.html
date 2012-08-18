@@ -72,11 +72,35 @@ for ( var i=0; i< rules.length; i++ ){
           programming paradigm. River Trail gently extends JavaScript with
           simple deterministic data-parallel constructs that are translated at
           runtime into a low-level hardware abstraction layer. By leveraging
-          multiple CPU cores and vector instructions, River Trail programs can achieve significant speedup over sequential JavaScript.</p>
+          multiple CPU cores and vector instructions, River Trail programs can achieve significant speedup over sequential JavaScript.
+          The River Trail API is being considered for
+          standardization by the ECMA TC39 committee. You can read the API
+          documentation and you can follow progress on standardization here.
+          
 
-          <p>See the <a
+          <p>
+          An open-source prototype implementation of River Trail for
+          Firefox is available <a
+              href="https://github.com/RiverTrail/RiverTrail/"> here </a> and
+          instructions for installing it are <a
+              href="https://github.com/RiverTrail/RiverTrail/wiki">here</a>. This
+          prototype implements a variant of the full River Trail API that
+          compiles down to OpenCL and can be executed on CPUs and GPUs.
+         See the <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">wiki</a> for
-          instructions on installing River Trail </p>
+          instructions on installing the River Trail prototype. 
+          </p>
+          <p>
+          This tutorial is a gentle introduction to the River Trail language
+          extensions and API.
+          Note that this tutorial describes the River Trail API as
+          implemented by this prototype and <em>not</em> the strawman API being
+          considered for standardization.
+          </p>
+
+
+
+         
 
           <h1>Basic Concepts</h1>
           <h2>
@@ -86,15 +110,41 @@ for ( var i=0; i< rules.length; i++ ){
           <!--<h1>API</h1>-->
           <p>
           The central component of River Trail is the <em>ParallelArray</em>
-          type. ParallelArray's are, at a high-level like Java Script arrays -
-          ordered collections of things. Just like Java Script arrays,
-          ParallelArrays can contain other objects - other ParallelArrays, Java
-          Script arrays or other Java Script objects. But they differ from Java
+          type. ParallelArray objects are essentially <em> ordered collecctions of
+         scalar values </em>.
+
+        <!--
+          at a high-level like Java Script arrays -
+          ordered collections of elements. Just like a Java Script array,
+          the elements in a ParallelArray can be scalar values, or other objects
+          such as other ParallelArrays, Java Script arrays or other Java Script objects.
+          However ParallelArrays differ from Java
           Script arrays in a few important ways. ParallelArrays are:
-          <ul>
-              <li><b>Multi-Dimensional</b></li>
-              <li><b>Immutable</b></li>
-          </ul>
+          -->
+          <h3>Multi-Dimensional and Uniform</h3>
+          <p> ParallelArray objects can represent
+          multi-dimensional collections of scalars.
+          All ParallelArray objects have a <em>shape</em> that
+          succintly describes the dimensionality and size of the object. The
+          shape of a ParallelArray is defined as an array of numbers in which
+          the value of the ith element is the number of elements in the ith dimension.
+          So a 4x5 matrix of numbers can be represented as a ParallelArray
+          object whose shape is [4, 5]. Similarly, a 2D image in which each
+          pixel has RGBA values can be represented as a ParallelArray object
+          with shape [height, width, 4] (and this is exactly what the
+          constructor in line 41 below does).
+          </p>
+        <p>
+        Multi-dimensional ParallelArrays are also required to be <em>uniform</em> (also called
+        <em>rectangular</em>). That is, the length of all inner arrays in a
+        particular dimension must be the same. For example, <br>
+        <<0, 1>, <2>, <3, 4>> would be a non-uniform ParallelArray and is not
+        allowed.
+          </p>
+          <h3>Immutable</h3>
+          ParallelArrays are immutable once they are created. ParallelArrays
+          are manipulated by invoking methods on them which produce new
+          ParallelArray objects.
           </p>
           <h2> Constructors </h2>
           <p>
@@ -105,9 +155,9 @@ for ( var i=0; i< rules.length; i++ ){
           <h2> Methods </h2>
           ParallelArray objects created with the above constructors come with several methods to
           manipulate them. These methods typically produce a new ParallelArray
-          object (except the <em>reduce()</em> method which we will see in a
-          moment).
-        
+          object (except the <em>reduce()</em> method which produces a scalar
+          value).
+
           <h3> Map </h3>
           <h3> Reduce </h3>
           <h3> Scatter </h3>
@@ -116,7 +166,7 @@ for ( var i=0; i< rules.length; i++ ){
 
           <h2> Examples </h2>
           <h1> Lets build a web-app </h1>
-
+          
           <!--
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
