@@ -76,7 +76,7 @@ for ( var i=0; i< rules.length; i++ ){
           The River Trail API is being considered for
           standardization by the ECMA TC39 committee. You can read the API
           documentation and you can follow progress on standardization here.
-          
+
 
           <p>
           An open-source prototype implementation of River Trail for
@@ -86,7 +86,7 @@ for ( var i=0; i< rules.length; i++ ){
               href="https://github.com/RiverTrail/RiverTrail/wiki">here</a>. This
           prototype implements a variant of the full River Trail API that
           compiles down to OpenCL and can be executed on CPUs and GPUs.
-         See the <a
+          See the <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">wiki</a> for
           instructions on installing the River Trail prototype. 
           </p>
@@ -100,7 +100,7 @@ for ( var i=0; i< rules.length; i++ ){
 
 
 
-         
+
 
           <h1>Basic Concepts</h1>
           <h2>
@@ -111,9 +111,9 @@ for ( var i=0; i< rules.length; i++ ){
           <p>
           The central component of River Trail is the <em>ParallelArray</em>
           type. ParallelArray objects are essentially <em> ordered collecctions of
-         scalar values </em>.
+              scalar values </em>.
 
-        <!--
+          <!--
           at a high-level like Java Script arrays -
           ordered collections of elements. Just like a Java Script array,
           the elements in a ParallelArray can be scalar values, or other objects
@@ -134,12 +134,12 @@ for ( var i=0; i< rules.length; i++ ){
           with shape [height, width, 4] (and this is exactly what the
           constructor in line 41 below does).
           </p>
-        <p>
-        Multi-dimensional ParallelArrays are also required to be <em>uniform</em> (also called
-        <em>rectangular</em>). That is, the length of all inner arrays in a
-        particular dimension must be the same. For example, <br>
-        <<0, 1>, <2>, <3, 4>> would be a non-uniform ParallelArray and is not
-        allowed.
+          <p>
+          Multi-dimensional ParallelArrays are also required to be <em>uniform</em> (also called
+          <em>rectangular</em>). That is, the length of all inner arrays in a
+          particular dimension must be the same. For example, <br>
+          <<0, 1>, <2>, <3, 4>> would be a non-uniform ParallelArray and is not
+          allowed.
           </p>
           <h3>Immutable</h3>
           ParallelArrays are immutable once they are created. ParallelArrays
@@ -167,6 +167,11 @@ for ( var i=0; i< rules.length; i++ ){
           <h2> Examples </h2>
           <h1> Lets build a web-app </h1>
           
+
+
+
+
+
           <!--
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
@@ -201,7 +206,7 @@ $ git checkout gh-pages
       <!-- FOOTER  -->
       <div id="footer_wrap" class="outer">
           <footer class="inner">
-          <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+          <p>&copy; 2012 Jaswanth Sreeram. Published with <a href="http://pages.github.com">GitHub Pages</a></p>
           </footer>
       </div>
 

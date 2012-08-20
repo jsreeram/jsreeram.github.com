@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset='utf-8' />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+        <meta name="description" content="Jsreeram.github.com : jsreeram.github.com" />
+
+        <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+        <title>River Trail</title>
+        <script type="text/javascript">
+            var fixGistRules = [
+            ".gist .gist-highlight {  border-left: 3ex solid #eee;  position: relative;}",
+            ".gist .gist-highlight pre { counter-reset: linenumbers;}",
+            ".gist .gist-highlight pre div:before { color: #aaa; content: counter(linenumbers); counter-increment: linenumbers;  left: -3ex; position: absolute; text-align: right; width: 2.5ex;}" ];
+
+var head = document.getElementsByTagName('head')[0],
+    style = document.createElement('style');
+
+rules = new Array();
+var i=0;
+for ( i=0; i< fixGistRules.length; i++ ){
+    var fullrule = document.createTextNode(fixGistRules[i]);
+    rules.push(fullrule);
+}
+
+style.type = 'text/css';
+
+for ( var i=0; i< rules.length; i++ ){
+    if(style.styleSheet){
+        style.styleSheet.cssText = rules[i].nodeValue;
+    }else {
+        style.appendChild(rules[i]);
+        head.appendChild(style);
+    }
+}
+</script>
+  </head>
+
+  <body>
+
+      <!-- HEADER -->
+      <div id="header_wrap" class="outer">
+          <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jsreeram">View on GitHub</a>
+
+          <h1 id="project_title">Let's build a web app with River Trail</h1>
+          <h2 id="project_tagline">jsreeram.github.com</h2>
+
+          </header>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div id="main_content_wrap" class="outer">
+          <section id="main_content" class="inner">
+
+        This hands-on tutorial illustrates the use of River Trail in a sample HTML5
+          video application. In this tutorial, you will be able to 
+          <h2>Setup </h2>
+           <h3>Install</h3>If you have not already, <a
+                  href="https://github.com/RiverTrail/RiverTrail/wiki">download
+                  and install River Trail</a>.</p>
+           <h3>Configure</h3>
+              Additionally because of Firefox's security policy, you may have to
+              install Apache (or any other webserver) and configure it so that
+              it serves files from the River Trail directory.
+              <h3>Verify</h3> Check if you can run the examples in
+              <em>rivertrail/examples </em>. If you can, you are good to go.
+          <h2> Getting to know the app skeleton </h2>
+          We have prepared a skeleton for the video application that you can
+          start with to implement effects.
+
+
+
+          </section>
+      </div>
+
+      <!-- FOOTER  -->
+      <div id="footer_wrap" class="outer">
+          <footer class="inner">
+          <p>&copy; 2012 Jaswanth Sreeram. Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+          </footer>
+      </div>
+
+
+
+  </body>
+</html>
