@@ -43,7 +43,7 @@ for ( var i=0; i< rules.length; i++ ){
       <!-- HEADER -->
       <div id="header_wrap" class="outer">
           <header class="inner">
-          <a id="forkme_banner" href="https://github.com/jsreeram">View on GitHub</a>
+          <a id="forkme_banner" href="https://github.com/rivertrail/rivertrail">View on GitHub</a>
 
           <h1 id="project_title">Let's build a web app with River Trail</h1>
           <h2 id="project_tagline">jsreeram.github.com</h2>
@@ -55,21 +55,41 @@ for ( var i=0; i< rules.length; i++ ){
       <div id="main_content_wrap" class="outer">
           <section id="main_content" class="inner">
 
-        This hands-on tutorial illustrates the use of River Trail in a sample HTML5
-          video application. In this tutorial, you will be able to 
+          In this hands-on tutorial we will use the River Trail in a sample HTML5
+          video application. If you haven't already, read the <a
+              href="index.html">API description</a> and come back. It is also a
+          good idea to have this API description to refer to.
           <h2>Setup </h2>
-           <h3>Install</h3>If you have not already, <a
+           <h3>Download and Install</h3>If you have not already, <a
                   href="https://github.com/RiverTrail/RiverTrail/wiki">download
-                  and install River Trail</a>.</p>
+                  and install River Trail</a>.
+           To be able to use a video stream from a webcam you will also need
+           Rainbow.
            <h3>Configure</h3>
-              Additionally because of Firefox's security policy, you may have to
+              Because of Firefox's security policies, you may have to
               install Apache (or any other webserver) and configure it so that
               it serves files from the River Trail directory.
               <h3>Verify</h3> Check if you can run the examples in
-              <em>rivertrail/examples </em>. If you can, you are good to go.
-          <h2> Getting to know the app skeleton </h2>
-          We have prepared a skeleton for the video application that you can
-          start with to implement effects.
+              <em>rivertrail/examples </em> by loading them in Firefox. If you can, you are good to go.
+          <h2> The Skeleton </h2>
+          The directory <em>rivertrail/examples/video-app</em> contains a
+          skeleton for the video application that you can start with. Load up
+          the <em>index.html</em> file in this directory in Firefox and you should see the
+          default screen for the application skeleton:
+          <img src="images/v2.png"/>
+          The large box in the center is a <a
+              href="https://developer.mozilla.org/en-US/docs/Canvas_tutorial">
+              Canvas </a> that is used for rendering the video output. The
+          video input is either a HTML5 video stream embedded in a <a href
+              ="https://developer.mozilla.org/en-US/docs/HTML/Element/video">
+              video tag </a> or live video caputured by a webcam. On the
+          left of the screen you will see the various filters that can applied
+          to this input video stream - sepia toning, lightening, desaturation
+          etc. Click on the box in the center screen to start playback and try
+          out these filters - the sequential JavaScript versions are already
+          implemented. To switch to webcam video, click the "Webcam" toggle in
+          the top-left corner.
+          
 
 
 
