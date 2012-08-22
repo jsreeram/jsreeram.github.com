@@ -62,10 +62,12 @@ for ( var i=0; i< rules.length; i++ ){
       <div id="main_content_wrap" class="outer">
           <section id="main_content" class="inner">
 
-          In this hands-on tutorial we will use the River Trail in a sample HTML5
+          In this hands-on tutorial we will use River Trail to parallelize the
+          computationally instensive parts of a HTML5
           video application. If you haven't already, read the <a
               href="index.html">API description</a> and come back. It is also a
-          good idea to have this API description to refer to.
+          good idea to have this API description to refer to while reading
+          through this tutorial.
           <h2>Setup </h2>
           <h3>Download and Install</h3>If you have not already, <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
@@ -81,7 +83,7 @@ for ( var i=0; i< rules.length; i++ ){
           <h2> The Skeleton </h2>
           The directory <em>rivertrail/examples/video-app</em> contains a
           skeleton for the video application that you can start with. Load up
-          the <em>index.html</em> file in this directory in Firefox and you should see the
+          <code>index.html</code> in this directory in Firefox and you should see the
           default screen for the application skeleton:
           <img src="images/v2.png"/>
           The large box in the center is a <a
@@ -90,7 +92,7 @@ for ( var i=0; i< rules.length; i++ ){
           video input is either a HTML5 video stream embedded in a <a href
               ="https://developer.mozilla.org/en-US/docs/HTML/Element/video">
               video tag </a> or live video caputured by a webcam. On the
-          left of the screen you will see the various filters that can applied
+          right of the screen you will see the various filters that can applied
           to this input video stream - sepia toning, lightening, desaturation
           etc. Click on the box in the center screen to start playback and try
           out these filters. To switch to webcam video, click the "Webcam" toggle in
@@ -102,7 +104,7 @@ for ( var i=0; i< rules.length; i++ ){
           look at the basics of manipulating video using the Canvas API.
 
           <h2> Manipulating pixels on Canvas </h2>
-          Open up main.js in your favorite code editor. This file implements
+          Open up <code>main.js</code> in your favorite code editor. This file implements
           all the functionality in this web application except the filters
           themselves. When you load the page, the "doLoad()" function is called
           after the body of the webpage has been loaded. This function sets up
@@ -135,7 +137,8 @@ w = frame.width ; h = frame.height;
 </pre>
 
 Now we have an <a
-href="https://developer.mozilla.org/en-US/docs/HTML/Canvas/Pixel_manipulation_with_canvas">ImageData</a> object called "frame". The "data" attribute of this
+href="https://developer.mozilla.org/en-US/docs/HTML/Canvas/Pixel_manipulation_with_canvas">ImageData</a>
+object called <code>frame</code>. The <code>data</code> attribute of this
 object contains the pixel information and the "width"/"height" attributes
 contain the dimensions of the image we have captured.
 
@@ -154,7 +157,7 @@ var alpha = frame.data[100*w*4 + 50*4 + 3];
 </pre>
 
 To set, for example the red value of this pixel, simply write the new value at the
-offset shown above in the frame.data buffer.
+offset shown above in the <code>frame.data</code> buffer.
 
           <h2> Sepia Toning </h2>
           <a
@@ -162,13 +165,12 @@ offset shown above in the frame.data buffer.
               Toning</a> is a process performed on black-and-white print
           photographs to give them a warmer color. This filter simulates the
           sepia toning process on digital photographs or video.
-          <img src="images/se1.png" height="170"/>
-          <img src="images/se2.png" height="170"/>
     
           Let us first look at the sequential implementation of this filter in
           the function called <code>sepia_sequential()</code> in filters.js.
 
             <pre class="brush: js;first-line: 819">
+// Arguments w and h are not used in this kernel
 function sepia_sequential(frame, len, w, h, ctx) {
     var pix = frame.data;
     var r = 0, g = 0, b = 0;
@@ -197,11 +199,78 @@ function sepia_sequential(frame, len, w, h, ctx) {
           contains color values as <strong>rgbargbargba...</strong>. The
           <code>for</code> loop in line 822
           iterates over this buffer and for each pixel it reads the red, green
-          and blue values which are in pix[i], pix[i+1], pix[i+2] respectively.
+          and blue values (which are in <code>pix[i]</code>,
+          <code>pix[i+1]</code> and <code>pix[i+2]</code> respectively).
           It computes a weighted average of these colors to produce the new
-          red, green, blue values for that pixel.
+          red, green, blue values for that pixel. It then clamps the new
+          red, green and blue values to [0, 255] and writes them back into the
+          "data" buffer. When the loop is finished, we have replaced the RGB
+          values for all the pixels with their sepia-toned values and we can
+          now write the image back into the output context <code>ctx</code>
+          with the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-putimagedata">putImageData()</a></code>
+          method. The result should look like this (image on the left is the
+          original frame, image on the right is the output): <br>
 
+          <img src="images/se1.png" height="170"/>
+          <img src="images/se2.png" height="170"/>
 
+          <h3> Can we make this parallel? </h3>
+          If you look closely at the <code>sepia_sequential</code> function
+          above, you'll notice that each pixel can be processed independently
+          of all other pixels as its new RGB values depend only on its current
+          RGB values. And each iteration of the <code>for</code> loop does
+          not produce or consume side-effects. This makes it easy to
+          parallelize this operation with River Trail.
+
+          <p>Recall that the <em>ParallelArray</em> type has a constructor that
+          takes a canvas object as an arugment and returns a freshly minted
+          ParallelArray object containing the pixel data.</p>
+
+          <pre class="brush: js;first-line: 1">
+var pa = new ParallelArray(canvas);
+          </pre>
+          This creates a 3-dimensional ParallelArray <code>pa</code> with shape
+          [h, w, 4] that looks like the following:  
+          <img src="images/pa4.png" height="300" style="margin:auto;display:block;"/>
+          
+          Now all we have to do is to transform this ParallelArray into one
+          whose RGBA values (i.e., values along the vertical axis in the above
+          picture) are averaged with specific weights as in the sequential
+          implementation. We could do this one of two ways. The first way would
+          be to perform a <code>combine</code> operation on this ParallelArray.
+
+          
+          <pre class="brush: js;first-line: 1">
+          var output = pa.combine(1, function(index) {
+            var old_r = this.get(index, 0);
+            var old_g = this.get(index, 1);
+            var old_b = this.get(index, 2);
+            var a     = this.get(index, 3);
+
+            var r = old_r * 0.393 + old_g * 0.769 + old_b * 0.189;
+            var g = old_r * 0.349 + old_g * 0.686 + old_b * 0.168;
+            var b = old_r * 0.272 + old_g * 0.534 + old_b * 0.131;
+            return [r, g, b, a];
+          });
+          </pre>
+
+          [Explanation of above]
+
+          Instead of using <code>combine</code> let us try using the
+          comprehension constructor instead.
+
+          Create a function called <code>sepia_parallel</code> as follows:
+          <pre class="brush: js;first-line: 1">
+          function sepia_parallel (index, frame, w, h) {
+          }
+          </pre>
+          Just like the elemental function in the combine form above, this
+          elemental function too takes an <code>index</code> as the first
+          argument.
+          
+          
+
+         
 
           </section>
       </div>
