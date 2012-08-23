@@ -376,9 +376,9 @@ var pa = new ParallelArray(canvas);
             var old_b = frame[i][j][2];
             var a     = frame[i][j][3];
 
-            var r = oor*0.393 + oog*0.769 + oob*0.189;
-            var g = oor*0.349 + oog*0.686 + oob*0.168;
-            var b = oor*0.272 + oog*0.534 + oob*0.131;
+            var r = old_r*0.393 + old_g*0.769 + old_b*0.189;
+            var g = old_r*0.349 + old_g*0.686 + old_b*0.168;
+            var b = old_r*0.272 + old_g*0.534 + old_b*0.131;
 
             return [r, g, b, a];
         }
