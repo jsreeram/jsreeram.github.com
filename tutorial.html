@@ -114,51 +114,50 @@ for ( var i=0; i< rules.length; i++ ){
           The computeFrame() function is the workhorse that reads an input
           video frame, applies all the selected filters on it to produce an
           output frame that is written to the output canvas context.
-          The code above shows how a frame from a HTML video element is drawn to a 2D
-          context associated with a canvas element.
+          The code below shows how a single frame from a HTML video element is drawn to a 2D context associated with a canvas element.
           
           <!--<p><script
               src="http://gist.github.com/3419413.js#L2"></script></p>-->
-<pre class="brush: js;first-line: 240">
-// main.js : computeFrame()
-output_context.drawImage(video, 0, 0, output_canvas.width,
-    output_canvas.height);
-</pre>
-          After this video frame is drawn to canvas, we need to capture the
-          pixels so that we can apply our filters. This is done by calling
-          getImageData() on the context containing the image we want to
-          capture.
-<pre class="brush: js;first-line: 248">
-// main.js : computeFrame(), line number 249
-frame = input_context.getImageData(0, 0, input_canvas.width,
-    input_canvas.height);
-len = frame.data.length;
-w = frame.width ; h = frame.height;
-</pre>
+            <pre class="brush: js;first-line: 240">
+            // main.js : computeFrame()
+            output_context.drawImage(video, 0, 0, output_canvas.width,
+                output_canvas.height);
+            </pre>
+                  After this video frame is drawn to canvas, we need to capture the
+                  pixels so that we can apply our filters. This is done by calling
+                  getImageData() on the context containing the image we want to
+                  capture.
+            <pre class="brush: js;first-line: 248">
+            // main.js : computeFrame(), line number 249
+            frame = input_context.getImageData(0, 0, input_canvas.width,
+                input_canvas.height);
+            len = frame.data.length;
+            w = frame.width ; h = frame.height;
+            </pre>
 
-Now we have an <a
-href="https://developer.mozilla.org/en-US/docs/HTML/Canvas/Pixel_manipulation_with_canvas">ImageData</a>
-object called <code>frame</code>. The <code>data</code> attribute of this
-object contains the pixel information and the "width"/"height" attributes
-contain the dimensions of the image we have captured.
+            Now we have an <a
+            href="https://developer.mozilla.org/en-US/docs/HTML/Canvas/Pixel_manipulation_with_canvas">ImageData</a>
+            object called <code>frame</code>. The <code>data</code> attribute of this
+            object contains the pixel information and the "width"/"height" attributes
+            contain the dimensions of the image we have captured.
 
-The data attribute contains RGBA values for each pixel in a row-major format.
-That is, for a frame with h rows of pixels and w columns, it contains a
-1-dimensional array
-of length w * h * 4 as shown below:<br>
-<img src="images/imgdata.png" width="300"/><br>
+            The data attribute contains RGBA values for each pixel in a row-major format.
+            That is, for a frame with h rows of pixels and w columns, it contains a
+            1-dimensional array
+            of length w * h * 4 as shown below:<br>
+            <img src="images/imgdata.png" width="300"/><br>
 
-So for example to get the color values of a pixel in the 100th row and
-50th column in the image, we would do:
-<pre class="brush: js;first-line: 1">
-var red   = frame.data[100*w*4 + 50*4 + 0];
-var green = frame.data[100*w*4 + 50*4 + 1];
-var blue  = frame.data[100*w*4 + 50*4 + 2];
-var alpha = frame.data[100*w*4 + 50*4 + 3];
-</pre>
+            So for example to get the color values of a pixel in the 100th row and
+            50th column in the image, we would do:
+            <pre class="brush: js;first-line: 1">
+            var red   = frame.data[100*w*4 + 50*4 + 0];
+            var green = frame.data[100*w*4 + 50*4 + 1];
+            var blue  = frame.data[100*w*4 + 50*4 + 2];
+            var alpha = frame.data[100*w*4 + 50*4 + 3];
+            </pre>
 
-To set, for example the red value of this pixel, simply write the new value at the
-offset shown above in the <code>frame.data</code> buffer.
+            To set, for example the red value of this pixel, simply write the new value at the
+            offset shown above in the <code>frame.data</code> buffer.
 
           <h2> Sepia Toning </h2>
           <a
@@ -170,9 +169,8 @@ offset shown above in the <code>frame.data</code> buffer.
           Let us first look at the sequential implementation of this filter in
           the function called <code>sepia_sequential()</code> in filters.js.
 
-            <pre class="brush: js;first-line: 819">
-// Arguments w and h are not used in this kernel
-function sepia_sequential(frame, len, w, h, ctx) {
+          <pre class="brush: js;first-line: 820">
+function sepia_sequential(frame, len, ctx) {
     var pix = frame.data;
     var r = 0, g = 0, b = 0;
     for(var i = 0 ; i < len; i = i+4) {
@@ -194,7 +192,7 @@ function sepia_sequential(frame, len, w, h, ctx) {
     }
     ctx.putImageData(frame, 0, 0);
 } 
-            </pre>
+          </pre>
 
           Remember from the previous snippet that the frame.data buffer
           contains color values as <strong>rgbargbargba...</strong>. The
@@ -279,7 +277,7 @@ var pa = new ParallelArray(canvas);
 
           
           So for example, for the sepia filter, we would write:
-          <pre class="brush: js;first-line: 272">
+          <pre class="brush: js;first-line: 272; highlight:[275,276,277]">
             ...
             switch(filterName) {
             case "sepia":
@@ -305,7 +303,8 @@ var pa = new ParallelArray(canvas);
 
          Recall that the input to our filter <code>stage_input</code> is a [h,
          w, 4] shaped ParallelArray. You can think of it as a two-dimensional
-         ParallelArray with shape [h, w] in which each element (which corresponds to a single pixel) is itself a ParallelArray of shape [4].
+         ParallelArray with shape [h, w] in which each element (which corresponds to
+         a single pixel) is itself a ParallelArray of shape [4].
          
          <!--
          where the first two dimensions correspond to the
@@ -320,43 +319,95 @@ var pa = new ParallelArray(canvas);
 
          Modify line 275 to this:
 
-          <pre class="brush: js;first-line: 272">
-            ...
-            switch(filterName) {
-                case "sepia":
-                    stage_output = new ParallelArray([h, w], kernelName,
-                        stage_input);
-            ...
-            </pre>
+        <pre class="brush: js;first-line: 272; highlight: [275, 276]">
+        ...
+        switch(filterName) {
+            case "sepia":
+                stage_output = new ParallelArray([h, w], kernelName,
+                    stage_input);
+                break;
+        ...
+        </pre>
 
-            The first argument [h, w] specifies the shape of the new
-            ParallelArray we want to create.
-            <code>kernelName</code> is a Function object pointing to the
-            elemental function (that we will talk about in a moment) and
-            <code>stage_input</code> is an argument to this elemental
-            function. This line of code creates a new
-            ParallelArray object of shape [h, w] in which each element is
-            produced by executing the function <code>kernelName</code>. This
-            new ParallelArray is then assigned to <code>stage_output</code>.
-            <br>
+        The first argument [h, w] specifies the shape of the new
+        ParallelArray we want to create.
+        <code>kernelName</code> is a Function object pointing to the
+        sepia elemental function (that we will talk about in a moment) and
+        <code>stage_input</code> is an argument to this elemental
+        function. This line of code creates a new
+        ParallelArray object of shape [h, w] in which each element is
+        produced by executing the function <code>kernelName</code>. This
+        new ParallelArray is then assigned to <code>stage_output</code>.
+        <br>
 
+        
+
+        Finally, we have to create the elemental function that produces the
+        color values for each pixel. You can think of it as a function that
+        when supplied indices, produces the ParallelArray elements at those indices.
+
+        Create a function called <code>sepia_parallel</code> in filters.js as follows:
+        <pre class="brush: js;first-line: 1">
+        // elemental function for sepia
+        function sepia_parallel (indices, frame) {
+        }
+        </pre>
+        The first argument <code>indices</code> is a vector of indices from the
+        iteration space [h, w]. indices[0] is the index along
+        the 1st dimension (from 0 to h-1) and indices[1] is the index along
+        the 2nd dimension (from 0 to w-1).
+        <!--
+        [gray gradient kernel to show how these indices map to pixel coords,
+        although it is not strictly required for sepia] <br>
+        -->
+        The <code>frame</code> parameter is the ParallelArray object that was passed as an
+        argument to the constructor above.<br>
+        Now let's fill in the body of the elemental function.
+
+        <pre class="brush: js;first-line: 1;
+        highlight:[3,4,5,6,7,8,9,10,11,12,13]">
+        // elemental function for sepia
+        function sepia_parallel (indices, frame) {
+            var i = index[0];
+            var j = index[1];
             
+            var old_r = frame[i][j][0];
+            var old_g = frame[i][j][1];
+            var old_b = frame[i][j][2];
+            var a     = frame[i][j][3];
+
+            var r = oor*0.393 + oog*0.769 + oob*0.189;
+            var g = oor*0.349 + oog*0.686 + oob*0.168;
+            var b = oor*0.272 + oog*0.534 + oob*0.131;
+
+            return [r, g, b, a];
+        }
+        </pre>
+        
+        In lines 3-9, we grab the indices and read the RGBA values from the
+        input ParallelArray <code>frame</code>. then, just like in the
+        sequential version we mix these colors in lines 11-13 and return a
+        4-element array consisting of the new color values for the pixel at
+        position <code>i, j</code>. 
+
+        And thats it. Select the "River Trail" toggle on the top-right of the
+        app screen and play the video. You should see the same sepia toning
+        effect you saw with the sequential implementation.<p>
+
+        The River Trail compiler takes your elemental function and parallelizes
+        it application over the iteration space. Note that you did not have to
+        create or manage threads, write any non-JavaScript code or deal with
+        race conditions and deadlocks.
 
 
-          Create a function called <code>sepia_parallel</code> as follows:
-          <pre class="brush: js;first-line: 1">
-          function sepia_parallel (index, frame, w, h) {
-          }
-          </pre>
-          
-          
-          
-          We could have also achieved the same result by calling the
-          <code>combine</code> method on this ParallelArray:
 
-          
-          <pre class="brush: js;first-line: 1">
-          var output = pa.combine(1, function(index) {
+        <h2>Exercise</h2>
+        We could have also implemented the sepia filter by calling the
+        <code>combine</code> method on the <code>stage_input</code> ParallelArray.
+
+
+        <pre class="brush: js;first-line: 1">
+        stage_output = stage_input.combine(1, function(index) {
             var old_r = this.get(index, 0);
             var old_g = this.get(index, 1);
             var old_b = this.get(index, 2);
@@ -366,11 +417,12 @@ var pa = new ParallelArray(canvas);
             var g = old_r * 0.349 + old_g * 0.686 + old_b * 0.168;
             var b = old_r * 0.272 + old_g * 0.534 + old_b * 0.131;
             return [r, g, b, a];
-          });
-          </pre>
+        });
+        </pre>
 
-          [Explanation of above]
-
+        <!--
+        [Do we have time to explain the combine alternative?]
+        -->
          
           
 
