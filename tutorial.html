@@ -52,7 +52,7 @@ for ( var i=0; i< rules.length; i++ ){
           <header class="inner">
           <a id="forkme_banner" href="https://github.com/rivertrail/rivertrail">View on GitHub</a>
 
-          <h1 id="project_title">Build a web app with River Trail</h1>
+          <h1 id="project_title">Building a Video Editor with River Trail</h1>
           <h2 id="project_tagline">jsreeram.github.com</h2>
 
           </header>
@@ -230,7 +230,7 @@ var pa = new ParallelArray(canvas);
           </pre>
           This creates a 3-dimensional ParallelArray <code>pa</code> with shape
           [h, w, 4] that looks like the following:  
-          <img src="images/pa4.png" height="300" style="margin:auto;display:block;"/>
+          <img src="images/pacanvas1.png" height="300" style="margin:auto;display:block;"/>
 
           So for pixel on the canvas at coordinates (x, y), pa.get(x, y, 0)
           will contain the red value, pa.get(x, y, 1) will contain the green
@@ -395,7 +395,7 @@ var pa = new ParallelArray(canvas);
         effect you saw with the sequential implementation.<p>
 
         The River Trail compiler takes your elemental function and parallelizes
-        it application over the iteration space. Note that you did not have to
+        its application over the iteration space. Note that you did not have to
         create or manage threads, write any non-JavaScript code or deal with
         race conditions and deadlocks.
 
@@ -404,6 +404,7 @@ var pa = new ParallelArray(canvas);
         <h2>Exercise</h2>
         We could have also implemented the sepia filter by calling the
         <code>combine</code> method on the <code>stage_input</code> ParallelArray.
+        Let us try and write that.
 
 
         <pre class="brush: js;first-line: 1">
@@ -424,9 +425,22 @@ var pa = new ParallelArray(canvas);
         [Do we have time to explain the combine alternative?]
         -->
          
+       <h2> Edge Detection and Sharpening</h2>
+       Let's move on to something a little more complicated - <a
+           href="http://en.wikipedia.org/wiki/Edge_detection">edge
+           detection</a> and <a
+           href="http://en.wikipedia.org/wiki/Edge_enhancement">sharpening</a>.
+       Edge detection is a common tool used in digital image processing and
+       computer vision that seeks to highlight points in the image where the
+       image brightness changes sharply. Select the edge detection effect and
+       click play to look at the result of the effect.
           
+       <img src="images/se1.png" height="170"/>
+       <img src="images/ed1.png" height="170"/>
 
-         
+       There are many diverse approaches to edge detection but we are
+       interested in the most popular <a
+           href="http://en.wikipedia.org/wiki/Convolution">convolution</a> based approach.
 
           </section>
       </div>
