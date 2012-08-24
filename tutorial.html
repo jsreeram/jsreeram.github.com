@@ -68,6 +68,13 @@ for ( var i=0; i< rules.length; i++ ){
               href="index.html">API description</a> and come back. It is also a
           good idea to have this API description to refer to while reading
           through this tutorial.
+          <h2>Index</h2>
+          <a name="setup" style="cursor:pointer">1. Setup</a><br>
+          <a name="skeleton" style="cursor:pointer">2. The Skeleton</a><br>
+          <a name="manip" style="cursor:pointer" >3. Manipulating pixels on canvas</a><br>
+          <a name="sepia" style="cursor:pointer" >4. Sepia Toning</a><br>
+          <a name="edge" style="cursor:pointer" >5. Edge Detection/Sharpening</a><br>
+
           <h2>Setup </h2>
           <h3>Download and Install</h3>If you have not already, <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
@@ -439,10 +446,133 @@ var pa = new ParallelArray(canvas);
        <img src="images/ed1.png" height="170"/>
 
        There are many diverse approaches to edge detection but we are
-       interested in the most popular <a
-           href="http://en.wikipedia.org/wiki/Convolution">convolution</a> based approach.
+       interested in the most popular 2D discrete <a
+           href="http://en.wikipedia.org/wiki/Convolution">convolution</a>
+       based approach. 
+       <img src="images/convolution2.png" height="200" style="margin:auto;display:block;"/>
+       At a high-level, discrete convolution on a single pixel in an image
+       involves taking this pixel (shown in dark blue above) and computing the
+       weighted sum of its neighbors that lie within some specific window to produce the output pixel (shown in dark
+       red above). The weights and the window are described by the convolution
+       <em>kernel</em>. This process is repeated for all the pixels to produce
+       the final output of the convolution.
+       <br><br>
+       Consider a 5x5 matrix convolved with a 3x3 kernel as shown below. For
+       simplicity, we are only interested in the input element highlighted in blue.
+       <img src="images/convolution4.png" height="150" style="margin:auto;display:block;"/>
+       The weighted sum for this element is:<br>
+       (1*2) + (1*3) + (2*0) + <br>
+       (2*0) + (2*1) + (1*3) + <br>
+       (1*3) + (5*0) + (0*3) + <br>
+       = 13. The value of this element in the output matrix is therefore
+       13.<br>
 
-          </section>
+
+       You can take a look at the sequential implementation of edge detection in
+       <code>edge_detect_sequential</code> in filters.js. Don't worry about
+       understanding it in detail yet.
+
+        <!--
+        <pre class="brush: js;first-line: 1405">
+        function edge_detect_sequential(frame, len, w, h, ctx) {
+        var pix = frame.data
+        var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+        var new_pix = new Array(len);
+        var kernel_width = (kernel.length-1)/2; // how many elements in each direction
+        var neighbor_sum = [0, 0, 0, 255];
+        var weight;
+        for(var n = 0; n < len; n = n + 4) {
+
+            neighbor_sum[0] = 0;
+            neighbor_sum[1] = 0;
+            neighbor_sum[2] = 0;
+
+            for(var i = -1*kernel_width; i <= kernel_width; i++) {
+                for(var j = -1*kernel_width; j <= kernel_width; j++) {
+                    var offset =  n+(i*4*w)+(j*4);
+                    if(offset < 0 || offset > len-4)  offset = 0;
+                    weight = kernel[i+kernel_width][j+kernel_width];
+                    neighbor_sum[0] += pix[offset] * weight;
+                    neighbor_sum[1] += pix[offset+1] * weight;
+                    neighbor_sum[2] += pix[offset+2] * weight;
+                }
+            }
+            new_pix[n] = neighbor_sum[0];
+            new_pix[n+1] = neighbor_sum[1];
+            new_pix[n+2] = neighbor_sum[2];
+            new_pix[n+3] = pix[n+3];
+        }
+
+       for(var n = 0 ; n < len; n++) {
+           var val = new_pix[n];
+           if(val < 0) val = 0;
+           if(val > 255) val = 255;
+           pix[n] = val;
+       }
+       ctx.putImageData(frame, 0, 0);
+    }
+    </pre>
+    -->
+    Let us try and implement this using RiverTrail. Make a function called
+    <code>edge_detect_parallel</code> in filters.js.
+        <pre class="brush: js;highlight: [1,2,3,4,5,6,7]">
+        function edge_detect_parallel(index, frame, w, h) {
+            var m = index[0];
+            var n = index[1];
+            var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+            var kernel_width = (ekernel.length-1)/2; // will be '2' for this kernel
+            var neighbor_sum = [0, 0, 0, 255];
+        }
+        </pre>
+        The first two lines of the body are the same as the beginning of the
+        parallel sepia implementation. (m, n) is now the position of a pixel in
+        the input ParallelArray <code>frame</code>. The variable
+        <code>ekernel</code> is the 5x5 kernel we will be using for
+        convolution (you can copy this over from the sequential version). And
+        we also need a 4 element array <code>neighbor_sum</code> to hold the weighted sum.
+        <br><br>
+        At this point we have an input frame (<code>frame</code>) and a
+        specific pixel <code>(m, n)</code> which we will call the "input pixel". Now we need to define a "window" of
+        neighboring pixels such that this window is centered at this input
+        pixel. We can define such a window by using a nested loop as follows:
+
+        <pre class="brush: js;highlight: [7,8,9,10,11]">
+        function edge_detect_parallel(index, frame, w, h) {
+            var m = index[0];
+            var n = index[1];
+            var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+            var kernel_width = (ekernel.length-1)/2; // will be '2' for this kernel
+            var neighbor_sum = [0, 0, 0, 255];
+            for(var i = -1*kernel_width; i <= kernel_width; i++) {
+                for(var j = -1*kernel_width; j <= kernel_width; j++) {
+                    var x = m+i; var y = n+j;
+                }
+            }
+        }
+        </pre>
+        And there. We have a 2D window that runs from -2 to 2.
+
+
+
+        <!--
+        One instance of this function produces the color value for
+        one pixel in the input ParallelArray. The first step is to 
+        -->
+        <!--
+        Next, lets create a 4 element array to hold the weighted sum.
+        <pre class="brush: js;first-line: 1;highlight: 5">
+        function edge_detect_parallel(index, frame, w, h) {
+            var m = index[0];
+            var n = index[1];
+            var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+        }
+        </pre>
+        -->
+
+
+
+
+        </section>
       </div>
 
       <!-- FOOTER  -->
