@@ -90,8 +90,26 @@ for ( var i=0; i< rules.length; i++ ){
           Because of Firefox's security policies, you may have to
           install Apache (or another webserver) and configure it so that
           it serves files from the River Trail directory.
-          <h3>Verify</h3> Check if you can run the examples in
-          <em>rivertrail/examples </em> by loading them in Firefox. If you can, you are good to go.
+          <h3>Verify</h3>
+          To verify that everything is installed, go to the <a
+          href="http://rivertrail.github.com/RiverTrail/interactive/">interactive shell</a>
+          You should see a message saying:<br><br>
+          <code>It appears that you have River Trail installed. Enabling
+          compiled mode...</code> <br><br>
+          If you see this, then the extension has been installed correctly.
+          However if you see something like:<br><br> 
+          <code>PS: This page uses the sequential library implementation of
+          River Trail. You won't need the extension but there will be no
+          speedup either.</code><br><br> then the extension isn't installed properly.
+          
+          Now
+          try running one of the included examples in
+          <em>rivertrail/examples/</em>. For instance, the n-body simulation in
+          idf-demo.
+
+          <!--Check if you can run the examples in
+          <em>rivertrail/examples </em> by loading them in Firefox. If you can,
+          you are good to go. -->
           <h2><a name="skeleton"></a>The Skeleton </h2>
           The directory <em>rivertrail/examples/video-app</em> contains a
           skeleton for the video application that you can start with. Load up
@@ -380,8 +398,8 @@ var pa = new ParallelArray(canvas);
         highlight:[3,4,5,6,7,8,9,10,11,12,13]">
         // elemental function for sepia
         function sepia_parallel (indices, frame) {
-            var i = index[0];
-            var j = index[1];
+            var i = indices[0];
+            var j = indices[1];
             
             var old_r = frame[i][j][0];
             var old_g = frame[i][j][1];
