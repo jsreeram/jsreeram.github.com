@@ -69,13 +69,16 @@ for ( var i=0; i< rules.length; i++ ){
           good idea to have this API description to refer to while reading
           through this tutorial.
           <h2>Index</h2>
-          <a name="setup" style="cursor:pointer">1. Setup</a><br>
-          <a name="skeleton" style="cursor:pointer">2. The Skeleton</a><br>
-          <a name="manip" style="cursor:pointer" >3. Manipulating pixels on canvas</a><br>
-          <a name="sepia" style="cursor:pointer" >4. Sepia Toning</a><br>
-          <a name="edge" style="cursor:pointer" >5. Edge Detection/Sharpening</a><br>
 
-          <h2>Setup </h2>
+          <a href="#setup" style="cursor:pointer">1. Setup</a><br>
+          <a href="#skeleton" style="cursor:pointer">2. The Skeleton</a><br>
+          <a href="#manip" style="cursor:pointer" >3. Manipulating pixels on canvas</a><br>
+          <a href="#sepia" style="cursor:pointer" >4. Sepia Toning</a><br>
+          <a href="#3D" style="cursor:pointer" >5. Stereoscopic 3D</a><br>
+          <a href="#edge" style="cursor:pointer" >6. Edge Detection/Sharpening</a><br>
+          <a href="#face" style="cursor:pointer" >7. Color-based Face Detection</a><br>
+
+          <h2><a name="setup"></a>Setup</h2>
           <h3>Download and Install</h3>If you have not already, <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
               and install River Trail</a>.
@@ -87,7 +90,7 @@ for ( var i=0; i< rules.length; i++ ){
           it serves files from the River Trail directory.
           <h3>Verify</h3> Check if you can run the examples in
           <em>rivertrail/examples </em> by loading them in Firefox. If you can, you are good to go.
-          <h2> The Skeleton </h2>
+          <h2><a name="skeleton"></a>The Skeleton </h2>
           The directory <em>rivertrail/examples/video-app</em> contains a
           skeleton for the video application that you can start with. Load up
           <code>index.html</code> in this directory in Firefox and you should see the
@@ -110,7 +113,7 @@ for ( var i=0; i< rules.length; i++ ){
           versions using River Trail. Before we dive into implementation, lets
           look at the basics of manipulating video using the Canvas API.
 
-          <h2> Manipulating pixels on Canvas </h2>
+          <h2><a name="manip"></a> Manipulating pixels on Canvas </h2>
           Open up <code>main.js</code> in your favorite code editor. This file implements
           all the functionality in this web application except the filters
           themselves. When you load the page, the "doLoad()" function is called
@@ -166,7 +169,7 @@ for ( var i=0; i< rules.length; i++ ){
             To set, for example the red value of this pixel, simply write the new value at the
             offset shown above in the <code>frame.data</code> buffer.
 
-          <h2> Sepia Toning </h2>
+          <h2><a name="sepia"></a> Sepia Toning </h2>
           <a
               href="http://en.wikipedia.org/wiki/Photographic_print_toning#Sepia_toning">Sepia
               Toning</a> is a process performed on black-and-white print
@@ -432,7 +435,7 @@ var pa = new ParallelArray(canvas);
         [Do we have time to explain the combine alternative?]
         -->
          
-       <h2> Edge Detection and Sharpening</h2>
+       <h2><a name="edge"></a> Edge Detection and Sharpening</h2>
        Let's move on to something a little more complicated - <a
            href="http://en.wikipedia.org/wiki/Edge_detection">edge
            detection</a> and <a
