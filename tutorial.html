@@ -83,10 +83,12 @@ for ( var i=0; i< rules.length; i++ ){
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
               and install River Trail</a>.
           To be able to use a video stream from a webcam you will also need
-          Rainbow.
+          to install the <a
+          href="https://github.com/downloads/RiverTrail/RiverTrail/rainbow.xpi">Rainbow</a>
+          extension.
           <h3>Configure</h3>
           Because of Firefox's security policies, you may have to
-          install Apache (or any other webserver) and configure it so that
+          install Apache (or another webserver) and configure it so that
           it serves files from the River Trail directory.
           <h3>Verify</h3> Check if you can run the examples in
           <em>rivertrail/examples </em> by loading them in Firefox. If you can, you are good to go.
@@ -553,7 +555,76 @@ var pa = new ParallelArray(canvas);
             }
         }
         </pre>
-        And there. We have a 2D window that runs from -2 to 2.
+        And there. Now we have an iteration space <code>(x, y)</code> that goes
+        from [m-2, n-2] to [m+2, n+2] which is precisely the set of neighboring
+        pixels we want to add up. That is, frame[x][y] is a pixel in within the
+        neighbor window. So lets add them up with the weights from
+        <code>ekernel</code>:
+
+        <pre class="brush: js;highlight: [7,11,12,13,14]">
+        function edge_detect_parallel(index, frame, w, h) {
+            var m = index[0];
+            var n = index[1];
+            var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+            var kernel_width = (ekernel.length-1)/2; // will be '2' for this kernel
+            var neighbor_sum = [0, 0, 0, 255];
+            var weight;
+            for(var i = -1*kernel_width; i <= kernel_width; i++) {
+                for(var j = -1*kernel_width; j <= kernel_width; j++) {
+                    var x = m+i; var y = n+j;
+                    weight = ekernel[i+kernel_width][j+kernel_width];
+                    neighbor_sum[0] += frame[x][y][0] * weight;
+                    neighbor_sum[1] += frame[x][y][1] * weight;
+                    neighbor_sum[2] += frame[x][y][2] * weight;
+                }
+            }
+        }
+        </pre>
+        There is a detail we have ignored so far. What do we do with pixels on
+        the borders of the image for whom the neighbor window goes out of the
+        image ? There are several approaches to handle this situation - we
+        could pad the original ParallelArray on all 4 sides so that the
+        neighbor window is guaranteed to never go out of bounds. Another
+        approach is to wrap around the image. For simplicity, we will simply
+        treat clamp the neighbor window to the borders of the image.
+        <pre class="brush: js;first-line:10;highlight: [11,12]">
+             var x = m+i; var y = n+j;
+             if(x < 0) x = 0; if(x > h-1) x = h-1;
+             if(y < 0) y = 0; if(y > w-1) y = w-1;
+             weight = ekernel[i+kernel_width][j+kernel_width];
+        </pre>
+
+
+        After the loops are done, we have our weighted sum for each color in
+        neighbor_sum which we return.
+
+
+        <pre class="brush: js;highlight: [19]">
+        function edge_detect_parallel(index, frame, w, h) {
+            var m = index[0];
+            var n = index[1];
+            var ekernel = [[1,1,1,1,1], [1,2,2,2,1], [1,2,-32,2,1], [1,2,2,2,1], [1,1,1,1,1]];
+            var kernel_width = (ekernel.length-1)/2; // will be '2' for this kernel
+            var neighbor_sum = [0, 0, 0, 255];
+            var weight;
+            for(var i = -1*kernel_width; i <= kernel_width; i++) {
+                for(var j = -1*kernel_width; j <= kernel_width; j++) {
+                    var x = m+i; var y = n+j;
+                    if(x < 0) x = 0; if(x > h-1) x = h-1;
+                    if(y < 0) y = 0; if(y > w-1) y = w-1;
+                    weight = ekernel[i+kernel_width][j+kernel_width];
+                    neighbor_sum[0] += frame[x][y][0] * weight;
+                    neighbor_sum[1] += frame[x][y][1] * weight;
+                    neighbor_sum[2] += frame[x][y][2] * weight;
+                }
+            }
+            return neighbor_sum;
+        }
+        </pre>
+
+       <h2><a name="3D"></a> Stereoscopic 3D</h2>
+       <h2><a name="face"></a> Color-based Face Detection</h2>
+
 
 
 
