@@ -118,12 +118,12 @@ for ( var i=0; i< rules.length; i++ ){
           <h2><a name="manip"></a> Manipulating pixels on Canvas </h2>
           Open up <code>main.js</code> in your favorite code editor. This file implements
           all the functionality in this web application except the filters
-          themselves. When you load the page, the "doLoad()" function is called
+          themselves. When you load the page, the <code>doLoad()</code> function is called
           after the body of the webpage has been loaded. This function sets up
           the drawing contexts, initializes the list of filters (or kernels)
           and assigns a click event handler for the output canvas.
 
-          The computeFrame() function is the workhorse that reads an input
+          The <code>computeFrame()</code> function is the workhorse that reads an input
           video frame, applies all the selected filters on it to produce an
           output frame that is written to the output canvas context.
           The code below shows how a single frame from a HTML video element is drawn to a 2D context associated with a canvas element.
