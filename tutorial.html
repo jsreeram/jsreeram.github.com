@@ -81,31 +81,36 @@ for ( var i=0; i< rules.length; i++ ){
           <h2><a name="setup"></a>Setup</h2>
           <h3>Download and Install</h3>If you have not already, <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
-              and install River Trail</a>.
-          To be able to use a video stream from a webcam you will also need
+              and install River Trail</a>. For this tutorial, you do not need
+              to build the extension. You only need the
+              River Trail distribution and the River Trail binary
+              extension for Firefox.
+              
+          To be able to manipulate video from a webcam you will also need
           to install the <a
-          href="https://github.com/downloads/RiverTrail/RiverTrail/rainbow.xpi">Rainbow</a>
+          href="https://addons.mozilla.org/en-us/firefox/addon/mozilla-labs-rainbow/">Rainbow</a>
           extension.
           <h3>Configure</h3>
           Because of Firefox's security policies, you may have to
           install Apache (or another webserver) and configure it so that
           it serves files from the River Trail directory.
           <h3>Verify</h3>
-          To verify that everything is installed, go to the <a
+          To verify that extension is installed, go to the <a
           href="http://rivertrail.github.com/RiverTrail/interactive/">interactive shell</a>
-          You should see a message saying:<br><br>
+          On the last line, you should see a message saying:<br><br>
           <code>It appears that you have River Trail installed. Enabling
           compiled mode...</code> <br><br>
           If you see this, then the extension has been installed correctly.
-          However if you see something like:<br><br> 
+          However if you only see something like:<br><br> 
           <code>PS: This page uses the sequential library implementation of
           River Trail. You won't need the extension but there will be no
           speedup either.</code><br><br> then the extension isn't installed properly.
+          See the <a href="https://github.com/RiverTrail/RiverTrail/wiki"></a>
+          instructions to install it.<br><br>
           
-          Now
-          try running one of the included examples in
-          <em>rivertrail/examples/</em>. For instance, the n-body simulation in
-          idf-demo.
+          Once the extension is installed correctly, try running one of the
+          included examples in <em>rivertrail/examples/</em>. For instance, the
+          n-body simulation example in <em>idf-demo</em>.
 
           <!--Check if you can run the examples in
           <em>rivertrail/examples </em> by loading them in Firefox. If you can,
@@ -225,7 +230,7 @@ function sepia_sequential(frame, len, ctx) {
           </pre>
 
           Remember from the previous snippet that the frame.data buffer
-          contains color values as <strong>rgbargbargba...</strong>. The
+          contains color values as a linear sequence of <strong>rgba</strong> values. The
           <code>for</code> loop in line 823
           iterates over this buffer and for each pixel it reads the red, green
           and blue values (which are in <code>pix[i]</code>,
@@ -604,7 +609,7 @@ var pa = new ParallelArray(canvas);
         could pad the original ParallelArray on all 4 sides so that the
         neighbor window is guaranteed to never go out of bounds. Another
         approach is to wrap around the image. For simplicity, we will simply
-        treat clamp the neighbor window to the borders of the image.
+        clamp the neighbor window to the borders of the image.
         <pre class="brush: js;first-line:10;highlight: [11,12]">
              var x = m+i; var y = n+j;
              if(x < 0) x = 0; if(x > h-1) x = h-1;
