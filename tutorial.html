@@ -52,7 +52,7 @@ for ( var i=0; i< rules.length; i++ ){
           <header class="inner">
           <a id="forkme_banner" href="https://github.com/rivertrail/rivertrail">View on GitHub</a>
 
-          <h1 id="project_title">Building a Video Editor with River Trail</h1>
+          <h1 id="project_title">Building a Video Effects Editor with River Trail</h1>
           <h2 id="project_tagline">jsreeram.github.com</h2>
 
           </header>
@@ -81,7 +81,8 @@ for ( var i=0; i< rules.length; i++ ){
           <h2><a name="setup"></a>Setup</h2>
           <h3>Download and Install</h3>If you have not already, <a
               href="https://github.com/RiverTrail/RiverTrail/wiki">download
-              and install River Trail</a>. For this tutorial, you do not need
+              and install River Trail</a>. For this tutorial, you do
+              <strong>not</strong> need
               to build the extension. You only need the
               River Trail distribution and the River Trail binary
               extension for Firefox.
@@ -646,6 +647,65 @@ var pa = new ParallelArray(canvas);
         </pre>
 
        <h2><a name="3D"></a> Stereoscopic 3D</h2>
+       Let's consider a slightly more complicated filter - one that transforms
+       the input video stream into 3D in real time. <a
+       href="http://en.wikipedia.org/wiki/Stereoscopy">Stereoscopic 3D </a> is a
+       method of creating the illusion of depth by simulating the different
+       images that a normal pair of eyes see (see <a
+       href="http://en.wikipedia.org/wiki/Binocular_disparity">Binocular
+       Disparity</a>). 
+       In essence, when looking at a 3-dimensional object our eyes each see a
+       slightly different 2D image due to the distance between them on our
+       head. Our brain uses this difference to extract depth information from
+       these 2D images.
+       To implement stereoscopic 3D, we will use this same methodology - we
+       present two 2D images each one slightly different from the other to the
+       viewer's eyes. The difference between these images - let's call them
+       left-eye and right-eye images; are two-fold. Firstly, the right-eye image
+       is offset 
+       
+       Let's look at the sequential implementation first:
+
+        <pre class="brush: js;first-line: 810">
+       function A3D_sequential(frame, len, w, h, dist, ctx) {
+        var pix = frame.data;
+        var new_pix = new Array(len);
+        var r1, g1, b1;
+        var r2, g2, b2;
+        var rb, gb, bb;
+        for(var i = 0 ; i < len; i = i+4) {
+            var k = i-(dist*4);
+            if(Math.floor(j/(w*4)) !== Math.floor(i/(w*4))) j = i;
+                r1 = pix[i]; g1 = pix[i+1]; b1 = pix[i+2];
+                r2 = pix[k]; g2 = pix[k+1]; b2 = pix[k+2];
+                var left = dubois_blend_left(r1, g1, b1);
+                var right = dubois_blend_right(r2, g2, b2);
+
+                rb = left[0] + right[0] + 0.5;
+                gb = left[1] + right[1] + 0.5;
+                bb = left[2] + right[2] + 0.5;
+
+                new_pix[i] = rb;
+                new_pix[i+1] = gb;
+                new_pix[i+2] = bb;
+                new_pix[i+3] = pix[i+3];
+        }
+        for(var i = 0 ; i < len; i = i+1) {
+            pix[i] = new_pix[i];
+        }
+        ctx.putImageData(frame, 0, 0);
+    }
+    </pre>
+    The beginning of this function is just like the sepia filter. We get a
+    reference <code>pix</code> to the image data in line 811, and we allocate a
+    new array <code>new_pix</code> to hold the output of the filter.
+       
+
+       
+
+       
+       
+
        <h2><a name="face"></a> Color-based Face Detection</h2>
 
 
