@@ -662,10 +662,18 @@ var pa = new ParallelArray(canvas);
        present two 2D images each one slightly different from the other to the
        viewer's eyes. The difference between these images - let's call them
        left-eye and right-eye images; are two-fold. Firstly, the right-eye image
-       is offset 
+       is offset slightly to the left in the horizontal direction. Secondly,
+       the red channel is masked off in the right-eye image and the blue and
+       green channels are masked off in the left-eye image. The result looks
+       something like the following (image on the left is the original, image
+       on the left is the 3d version).<br>
+       <div align="center">
+          <img src="images/42.png" height="130"/>
+          <img src="images/3d42-all.png" height="130"/>
+          <br>
+       </div>
        
        Let's look at the sequential implementation first:
-
         <pre class="brush: js;first-line: 810">
        function A3D_sequential(frame, len, w, h, dist, ctx) {
         var pix = frame.data;
