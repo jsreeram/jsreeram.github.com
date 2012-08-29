@@ -191,7 +191,8 @@ pre {
   width: 100%;
   /*padding: 10px;*/
   box-shadow: 0 0 0px rgba(0,0,0,.1);
-  overflow: auto;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 
 code {

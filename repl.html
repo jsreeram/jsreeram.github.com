@@ -28,10 +28,12 @@
                 padding-left:0px;
                 margin-left:0px;
                 border:0px;
+                overflow-x:hidden;
             }
             /* The inner console element. */
             .jqconsole {
                 padding: 10px;
+                overflow-x:hidden;
             }
             /* The cursor. */
             .jqconsole-cursor {
@@ -117,7 +119,7 @@ var pa_new = pa.combine(function (i) {
                     editor.session.setMode("ace/mode/javascript");
                 </script>
                 <img src="images/gray-play.svg" id="run" height="40"
-                style="position:absolute;left:46%;top:20%;z-index:10"
+                style="position:absolute;left:46%;top:40%;z-index:10"
                 onclick="jqconsole.Focus();console_run(null,true);return false;"/>
                 <div id="console"></div>
                 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
