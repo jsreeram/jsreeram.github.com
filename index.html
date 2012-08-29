@@ -155,14 +155,119 @@ for ( var i=0; i< rules.length; i++ ){
           <h2> Methods </h2>
           ParallelArray objects created with the above constructors come with several methods to
           manipulate them. These methods typically produce a new ParallelArray
-          object (except the <em>reduce()</em> method which produces a scalar
+          object (except the <em>reduce</em> method which produces a scalar
           value).
 
           <h3> Map </h3>
+          <p>
+          The first method we will discuss is <em>map</em>, probably the most prominent and well known data-parallel skeleton.
+          The <em>map</em> method expects a function as its first argument that given a single value produces a new value as its result.
+          In the following, we will call such function <em>elemental function</em> as it is used to produce the elements of a ParallelArray object.
+          The <em>map</em> method computes a new ParallelArray object out of an existing ParallelArray object by applying the provided
+          elemental function to each element of the source array and storing the result in the corresponding position in the result array.
+          Let us look at a simple example: increment
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var plusOne = source.map(function inc(v) { return v+1; });
+          </pre>
+          <p>
+          First, we define a new ParallelArray object <code>source</code> that contains the numbers 1 to 5. We then call the <em>map</em> method
+          of our source array with the function <code>inc</code> that computes the one increment of its argument. Thus, <code>plusOne</code> contains
+          the values 2 to 6. Also note that <code>plusOne</code> has the same shape as the original array <code>source</code>. The <em>map</em> method is 
+          shape preserving.
+          </p><p>
+          As you may have noticed, the <em>map</em> method does not provide an index to the elemental function it calls. We refer to this as <em>index free</em>
+          computations. Not using an index has the advantage that no indexing errors can be made. However, this added simplicitly comes at the cost of expressiveness.
+          With map, one can not inspect neighboring values, as commonly required for convolution style codes. 
+          </p>
+          <h3> Combine </h3>
+          <p>
+          The <em>combine</em> method addresses this issue. Similar to map, <em>combine</em> can be used to compute a new ParallelArray object by inspecting an
+          existing ParallelArray object's element. Other than <em>map</em>, the elemental function of <em>combine</em> is provided with access to the current index
+          in the source array, along with a reference to the source array itself.
+          Let us revisit the increment example from the previous section. When using <em>combine</em>, increment can be expressed as follows:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var plusOne = source.combine(function inc(i) { return this.get(i)+1; });
+          </pre>
+          <p>
+          As before, we first produce our source array holding the values 1 to 5. We then apply the <em>combine</em> method using a slightly modified 
+          version of the <code>inc</code> function. It now expects an index <code>i</code> as argument. Furthermore, the collection, i.e., the source 
+          ParallelArray object is bound to the variable <code>this</code> within the elemental function's body. 
+          We then compute the one increment of the value at index <code>i</code>. This element is computed by calling the <em>get</em> method 
+          of the source ParallelArray object with index <code>i</code> as argument.
+          </p><p>
+          As this example shows, using <em>combine</em> requires more code to implement increment. However, we have gained expressiveness. As an example, 
+          consider the following implementation of <em>reverse</em>:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var reverse = source.combine(function rev(i) { return this.get(this.length-i[0]-1); });
+          </pre>
+          <p>
+          In the elemental function <code>rev</code> we exploit the access to the index to compute the reversed index in the source array. Note that
+          computations are driven by the index position in the result, not the index that is read. We therefore use the expression <code>this.length-i[0]-1</code> 
+          to compute the source index of the reversed element for position <code>i</code> in the result array. This code makes use of the <em>length</em> 
+          property of the ParallelArray object that, similar to JavaScript's Array object, gives the number of elements in the array.
+          </p><p>
+          It is important to note here that the index <code>i</code> is not a scalar value but actually a vector of indices. In the above example, we therefore 
+          have to use <code>i[0]</code> in the computation of the source index. So far, all our examples computed on vectors and the use of an index vector
+          in <em>combine></em> was of no help. However, ParallelArray objects in River Trail can have multiple dimensions. The <em>map</em> method always 
+          operates on the outermost dimension only, i.e., on
+          the dimension that corresponds to the first element of the shape vector. With <em>combine</em>, the programmer can choose how deep to traverse. For
+          this, an optional first argument to the <em>combine</em> method is used. As an example, let us generalise the above reverse operation into a transpose
+          on matrices:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([4,4], function (iv) { return iv[0]*iv[1]; });
+          var transpose = source.combine(2, function rev(iv) { return this.get([this.getShape()[0]-iv[0]-1, this.getShape()[1]-iv[1]-1]); });
+          </pre>
+          <p>
+          We use a depth of 2 and, consequently, the index vector <code>iv</code> passed to the elemental function contains two indices, corresponding to the 
+          two outer most dimensions of the source array. We also use the <em>getShape</em> method, which is the multi dimensional counterpart to <em>length</em>: 
+          It returns a vector that gives the length for each dimension of a ParallelArray object. With <code>this.getShape()[0]-iv[0]-1</code> we thus compute 
+          the index at the transposed position within the source array for the first dimension. Note here that <em>get</em> also accepts an index vector as argument.
+          </p>
           <h3> Reduce </h3>
+          <p>
+          So far we have concentrated on parallel patterns that produce a new array out of an exisisting array. The <em>reduce</em> method implements a further 
+          important parallel pattern: reduction operations. As the name suggest, a reduction operation reduces the elements from an array to a single result. A
+          good example to start with is computing the sum of all elements of an array:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var sum = source.reduce(function plus(a,b) { return a+b; });
+          </pre>
+          <p>
+          As the example shows, the <em>reduce</em> method expects an elemental function as first argument that, given two values as parameters, produces a new
+          value as its result. In our example, we use <code>plus</code> which adds two values. A reduction over plus then defines the sum operation.
+          </p><p>
+          Note here that the reduction may be computed in any order. In particular, this means that the elemental function has to be commutative and associative
+          to ensure deterministic results. The River Trail runtime will not check this property but results might be different between calls even on the same
+          platform.
+          </p>
+          <h3> Scan </h3>
+          <p>
+          The <em>reduce</em> methods reduces an array into a single value. For some uses cases, it can be interesting to also store the intermediate results. 
+          One commonly used example is the prefix sum operation that, given a vector of numbers, computes another vector of numbers that at each position contains
+          the sum of all elements of the source vector up to that position. To implement this parallel pattern, River Trail's ParallelArray features the 
+          <em>scan</em> method.
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var psum = source.scan(function plus(a,b) { return a+b; });
+          </pre>
+          <p>
+          As we are still computing a sum, the elemental function has not changed. We still use the <code>plus</code> operation from the previous reduction 
+          example. However, when used with <em>scan</em> it now produces the prefix sum of the <code>source</code> array.
+          <p><p>
+          The same rules of parallel execution that apply to <em>reduce</em> also apply to <em>scan</em>. Although less obvious, <em>scan</em> can be computed in 
+          parallel by reordering the reduction steps. Therefore, we only guarantee a determinstic result if the elemental function is commutative and associtive.
+          </p>
           <h3> Scatter </h3>
           <h3> Filter </h3>
-          <h3> Scan </h3>
 
           <h2> Examples </h2>
           <h3> Sum </h3>
