@@ -147,6 +147,21 @@ strong {
 img {
   position: relative;
   margin: 0 auto;
+  padding:0px;
+  margin:0px;
+  border:0px;
+}
+img:hover {
+  box-shadow: 0 0 5px #ebebeb;
+  -webkit-box-shadow: 0 0 5px #ebebeb;
+  -moz-box-shadow: 0 0 5px #ebebeb;
+  -o-box-shadow: 0 0 5px #ebebeb;
+  -ms-box-shadow: 0 0 5px #ebebeb;
+}
+/*
+img {
+  position: relative;
+  margin: 0 auto;
   max-width: 739px;
   padding: 5px;
   margin: 10px 0 10px 0;
@@ -158,7 +173,7 @@ img {
   -o-box-shadow: 0 0 5px #ebebeb;
   -ms-box-shadow: 0 0 5px #ebebeb;
 }
-
+*/
 pre {
   width: 100%;
   color: #222;
