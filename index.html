@@ -218,7 +218,7 @@
           </p><p>
           It is important to note here that the index <code>i</code> is not a scalar value but actually a vector of indices. In the above example, we therefore 
           have to use <code>i[0]</code> in the computation of the source index. So far, all our examples computed on vectors and the use of an index vector
-          in <em>combine></em> was of no help. However, ParallelArray objects in River Trail can have multiple dimensions. The <em>map</em> method always 
+          in <em>combine</em> was of no help. However, ParallelArray objects in River Trail can have multiple dimensions. The <em>map</em> method always 
           operates on the outermost dimension only, i.e., on
           the dimension that corresponds to the first element of the shape vector. With <em>combine</em>, the programmer can choose how deep to traverse. For
           this, an optional first argument to the <em>combine</em> method is used. As an example, let us generalise the above reverse operation into a transpose
@@ -271,6 +271,62 @@
           parallel by reordering the reduction steps. Therefore, we only guarantee a determinstic result if the elemental function is commutative and associtive.
           </p>
           <h3> Scatter </h3>
+          <p>
+          So far we have seen <em>map</em> and <em>combine</em> that can be used to produce new arrays out of existing arrays. However, both methods are driven
+          by result indices, i.e., they define for each index position in the result how it is to be computed. Sometimes, this mapping is difficult to specify or
+          costly to compute. Instead, it is preferable to specify for a certain source index where it should be stored in the result array. This pattern is supported
+          by the <em>scatter</em> method in River Trail. Here is an example:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var reorder = source.scatter([4,0,3,1,2]);
+          </pre>
+          <p>
+          We again first compute our source array <code>source</code>. In a second step, we apply the <em>scatter</em> method with a single argument: the 
+          <em>scatter vector</em> <code>[4,0,3,1,2]</code>. Thereby, we specify that the first element of <code>source</code> is to become the fith element 
+          of the result (indexing starts with 0), the second value in <code>source</code> becomes the first in the result and so on. Overall, the above example 
+          produces the array <code>[2, 4, 5, 3, 1]</code>.
+          </p><p>
+          But what happens if we assign two source values to the same position of the result? As <em>scatter</em> is potentially computed in parallel, the
+          result would be non-deterministic. Therefore, by default, the River Trail runtime will throw an exception on conflict. However, in practise, 
+          conflicts often are meaningful and can be deterministically resolved. For these senarios, <em>scatter</em> accepts an optional second argument: the 
+          <em>conflict function</em> that, given two conflicting values, produces a single resolution. 
+          </p><p>
+          On closer inspection, a conflict function is not enough to produce a fully defined result. If the scatter vector contains the same target index more 
+          than once, inevitably it will not fill all indices of the target array. To remedy this, we allow the programmer to specify an optional default value
+          that will be used for all index positions that are not defined otherwise.
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var reorder = source.scatter([4,0,3,4,2], 3, function max(a, b) { return a&gt;b?a:b; });
+          </pre>
+          <p>
+          In the above example, the first and fourth element of the source array are both written to the fifth element of the result and no value is scattered
+          to the second index position. However, we provide the default of <code>3</code> as second argument. Lastly, we use a maximum as the conflict resolution 
+          function. Thus, the fifth position in the result is the maxium of <code>1</code> and <code>4</code>, which is <code>4</code>. Overall we get
+          <code>[2, 3, 5, 3, 4]</code>.
+          </p>
+          <p><em>scatter</em> has a final optional argument: the result length. By default, the length of the result will be the same as the source array's. 
+          Using a scatter index outside of the result's length will lead to a range error. To spread elements out or reduce the total number of elements,
+          the new length has to be explicitly provided.
+          </p><p>
+          Putting it all together, we can write an <em>histogram </em> by means of <em>scatter</em>. A histogram computes the frequency or number of occurences of
+          a value with in a sample. Lets assume we have some source data that contains values from zero to five. We also need a second vector that contains
+          weights. We will just use a vector of ones here. Here is the setup:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,2,4,2,4,5]);
+          var ones = source.map(function (v) { return 1; });
+          </pre>
+          <p>
+          We can then express histogram as scattering the ones we have just produced to the correct buckets, i.e., we interpret the source data as scatter indices. 
+          Conflicts are resolved by adding values, ultimately counting how many times a one has been written to a certain position. The natural default value
+          is <code>0</code>. Lastly, we have to provide a new length, as we reduce multiple source values into a single frequency value. Here is what it looks
+          like:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var hist = ones.scatter(source, 0, function sum (a,b) { return a+b;}, 6)
+          </pre>
           <h3> Filter </h3>
 
           <h2> Examples </h2>
