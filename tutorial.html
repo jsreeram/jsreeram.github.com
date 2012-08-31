@@ -76,7 +76,8 @@ for ( var i=0; i< rules.length; i++ ){
           <a href="#sepia" style="cursor:pointer" >4. Sepia Toning</a><br>
           <a href="#3D" style="cursor:pointer" >5. Stereoscopic 3D</a><br>
           <a href="#edge" style="cursor:pointer" >6. Edge Detection/Sharpening</a><br>
-          <a href="#face" style="cursor:pointer" >7. Color-based Face Detection</a><br>
+          <!--<a href="#face" style="cursor:pointer" >7. Color-based Face
+              Detection</a><br>-->
 
           <h2><a name="setup"></a>Setup</h2>
           <h3>Download and Install</h3>If you have not already, <a
@@ -461,6 +462,186 @@ var pa = new ParallelArray(canvas);
         [Do we have time to explain the combine alternative?]
         -->
          
+       <h2><a name="3D"></a> Stereoscopic 3D</h2>
+       Let's consider a slightly more complicated filter - one that transforms
+       the input video stream into 3D in real time. <a
+       href="http://en.wikipedia.org/wiki/Stereoscopy">Stereoscopic 3D </a> is a
+       method of creating the illusion of depth by simulating the different
+       images that a normal pair of eyes see (see <a
+       href="http://en.wikipedia.org/wiki/Binocular_disparity">Binocular
+       Disparity</a>). 
+       In essence, when looking at a 3-dimensional object our eyes each see a
+       slightly different 2D image due to the distance between them on our
+       head. Our brain uses this difference to extract depth information from
+       these 2D images.
+       To implement stereoscopic 3D, we will use this same methodology - we
+       present two 2D images each one slightly different from the other to the
+       viewer's eyes. The difference between these images - let's call them
+       left-eye and right-eye images; are two-fold. Firstly, the right-eye image
+       is offset slightly to the left in the horizontal direction. Secondly,
+       the red channel is masked off in the right-eye image and the blue and
+       green channels are masked off in the left-eye image. The result looks
+       something like the following (image on the left is the original, image
+       on the right is the 3d version).<br>
+       <div align="center">
+          <img src="images/42.png" height="130"/>
+          <img src="images/3d42-all.png" height="130"/>
+          <br>
+       </div>
+
+       
+       Let's look at the sequential implementation first:
+        <pre class="brush: js;first-line: 810">
+       function A3D_sequential(frame, len, w, h, dist, ctx) {
+        var pix = frame.data;
+        var new_pix = new Array(len);
+        var r1, g1, b1;
+        var r2, g2, b2;
+        var rb, gb, bb;
+        for(var i = 0 ; i < len; i = i+4) {
+            var k = i-(dist*4);
+            if(Math.floor(j/(w*4)) !== Math.floor(i/(w*4))) j = i;
+                r1 = pix[i]; g1 = pix[i+1]; b1 = pix[i+2];
+                r2 = pix[k]; g2 = pix[k+1]; b2 = pix[k+2];
+                var left = dubois_blend_left(r1, g1, b1);
+                var right = dubois_blend_right(r2, g2, b2);
+
+                rb = left[0] + right[0] + 0.5;
+                gb = left[1] + right[1] + 0.5;
+                bb = left[2] + right[2] + 0.5;
+
+                new_pix[i] = rb;
+                new_pix[i+1] = gb;
+                new_pix[i+2] = bb;
+                new_pix[i+3] = pix[i+3];
+        }
+        for(var i = 0 ; i < len; i = i+1) {
+            pix[i] = new_pix[i];
+        }
+        ctx.putImageData(frame, 0, 0);
+    }
+    </pre>
+    Don't worry about the details of the implementation just yet, just note
+    that the structure is somewhat similar to the sepia filter. One important
+    distinction is that while the sepia filter updated the pixel data in-place,
+    we cannot do that here - processing each pixel involves reading a
+    neighboring pixel. If we updated in-place, we may end up reading the
+    updated value for this neighboring pixel. In other words, there is a
+    write-after-read loop carried dependence here. So instead of updating in place, we
+    allocate a new buffer <code>new_pix</code> for holding the updated
+    values of the pixels.<br><br>
+
+    Lets start implementing the parallel version. What we want to implement is an operation
+    that reads the pixel data in the input ParallelArray object and produces
+    new pixel data into another. So just like sepia we can use the constructor
+    + elemental function approach.
+    
+    <pre class="brush: js;first-line: 272; highlight: [275, 276]">
+        ...
+        switch(filterName) {
+            case "A3D":
+                stage_output = new ParallelArray([h, w], kernelName,
+                    stage_input, w, h);
+                break;
+        ...
+        </pre>
+    Then create the elemental function in <code>filters.js</code> as follows:
+
+        <pre class="brush: js;first-line: 1; highlight:[1,2,3,4,5]">
+        // elemental function for 3D
+        function A3D_parallel (indices, frame, w, h, dist) {
+            var i = indices[0];
+            var j = indices[1];
+        }
+        </pre>
+
+        Each pair <code>(i, j)</code> corresponds to a pixel in the output
+        frame. Recall that each pixel such pixel in the output frame is
+        generated by blending two images - the left-eye and right-eye images
+        the latter being a copy of the former except shifted along the negative
+        x-axis (i.e., to the left).
+
+        <!--
+        So we first need two images from <code>frame</code> one for the left-eye and
+        one for the right-eye which is a copy of the left-eye image except it
+        is shifted along the negative x-axis (i.e., to the left).
+        -->
+        Let's call the pixel <code>frame[i][j]</code> the left eye pixel.
+        To get the right-eye pixel we will simply read a neighbor of the left
+        eye pixel that is some distance away. This distance is given to us the
+        the argument dist (which is updated everytime the 3D slider on the UI is
+        moved):
+
+        <pre class="brush: js;first-line: 1; highlight:[5,6]">
+        // elemental function for 3D
+        function A3D_parallel (indices, frame, w, h, dist) {
+            var i = indices[0];
+            var j = indices[1];
+            var k = j - dist;
+            if(k < 0) k = j;
+        }
+        </pre>
+        Now <code>frame[i][k]</code> is the right eye pixel. We need to guard
+        against the fact that if the distance is large we cannot get the right
+        eye pixel as it would be outside the frame we have. There are several
+        approaches for dealing with this situation - for simplicity we will
+        simply make the right eye pixel the same as the left eye pixel. Now,
+        lets mask off the appropriate colors in each of the left and right eye
+        pixels. We use the <code>dubois_blend_left/right()</code> functions for this. You
+        don't have to understand the details of these functions for this
+        tutorial; just that they take in an RGB tuple and produce new RGB tuple
+        that is appropriately masked for the right and left eyes. For details
+        on these functions, read about the Dubois method <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=941256&tag=1">here</a>.
+
+        <pre class="brush: js;first-line: 1; highlight:[7,8,9,10,11,12,13,14]">
+        // elemental function for 3d
+        function a3d_parallel (indices, frame, w, h, dist) {
+            var i = indices[0];
+            var j = indices[1];
+            var k = j - dist;
+            if(k < 0) k = j;
+            var r_l = frame[i][j][0];
+            var g_l = frame[i][j][1];
+            var b_l = frame[i][j][2];
+            var r_r = frame[i][k][0];
+            var g_r = frame[i][k][1];
+            var b_r = frame[i][k][2];
+            var left = dubois_blend_left(r_l, g_l, b_l);
+            var right = dubois_blend_right(r_r, g_r, b_r);
+        }
+        </pre>
+
+        Now we have the separately masked and blended left and right eye pixels. We now
+        blend these two pixels togther to produce the final color values.
+        <pre class="brush: js;first-line: 1; highlight:[15,16,17,18]">
+        // elemental function for 3d
+        function a3d_parallel (indices, frame, w, h, dist) {
+            var i = indices[0];
+            var j = indices[1];
+            var k = j - dist;
+            if(k < 0) k = j;
+            var r_l = frame[i][j][0];
+            var g_l = frame[i][j][1];
+            var b_l = frame[i][j][2];
+            var r_r = frame[i][k][0];
+            var g_r = frame[i][k][1];
+            var b_r = frame[i][k][2];
+            var left = dubois_blend_left(r_l, g_l, b_l);
+            var right = dubois_blend_right(r_r, g_r, b_r);
+            var rb = left[0] + right[0] + 0.5;
+            var gb = left[1] + right[1] + 0.5;
+            var bb = left[2] + right[2] + 0.5;
+            return [rb, gb, bb, 255];
+        }
+        </pre>
+    
+        And thats it. Select "RiverTrail" execution, click play and select the
+        3D filter. Put on Red-Cyan 3D glasses and you should be able to notice
+        the depth effect. Without the glasses this is how it looks (original
+        video frame on the left, with 3D on the right):
+
+          <img src="images/se1.png" height="170"/>
+          <img src="images/3d1.png" height="170"/>
        <h2><a name="edge"></a> Edge Detection and Sharpening</h2>
        Let's move on to something a little more complicated - <a
            href="http://en.wikipedia.org/wiki/Edge_detection">edge
@@ -646,75 +827,16 @@ var pa = new ParallelArray(canvas);
         }
         </pre>
 
-       <h2><a name="3D"></a> Stereoscopic 3D</h2>
-       Let's consider a slightly more complicated filter - one that transforms
-       the input video stream into 3D in real time. <a
-       href="http://en.wikipedia.org/wiki/Stereoscopy">Stereoscopic 3D </a> is a
-       method of creating the illusion of depth by simulating the different
-       images that a normal pair of eyes see (see <a
-       href="http://en.wikipedia.org/wiki/Binocular_disparity">Binocular
-       Disparity</a>). 
-       In essence, when looking at a 3-dimensional object our eyes each see a
-       slightly different 2D image due to the distance between them on our
-       head. Our brain uses this difference to extract depth information from
-       these 2D images.
-       To implement stereoscopic 3D, we will use this same methodology - we
-       present two 2D images each one slightly different from the other to the
-       viewer's eyes. The difference between these images - let's call them
-       left-eye and right-eye images; are two-fold. Firstly, the right-eye image
-       is offset slightly to the left in the horizontal direction. Secondly,
-       the red channel is masked off in the right-eye image and the blue and
-       green channels are masked off in the left-eye image. The result looks
-       something like the following (image on the left is the original, image
-       on the left is the 3d version).<br>
-       <div align="center">
-          <img src="images/42.png" height="130"/>
-          <img src="images/3d42-all.png" height="130"/>
-          <br>
-       </div>
-       
-       Let's look at the sequential implementation first:
-        <pre class="brush: js;first-line: 810">
-       function A3D_sequential(frame, len, w, h, dist, ctx) {
-        var pix = frame.data;
-        var new_pix = new Array(len);
-        var r1, g1, b1;
-        var r2, g2, b2;
-        var rb, gb, bb;
-        for(var i = 0 ; i < len; i = i+4) {
-            var k = i-(dist*4);
-            if(Math.floor(j/(w*4)) !== Math.floor(i/(w*4))) j = i;
-                r1 = pix[i]; g1 = pix[i+1]; b1 = pix[i+2];
-                r2 = pix[k]; g2 = pix[k+1]; b2 = pix[k+2];
-                var left = dubois_blend_left(r1, g1, b1);
-                var right = dubois_blend_right(r2, g2, b2);
 
-                rb = left[0] + right[0] + 0.5;
-                gb = left[1] + right[1] + 0.5;
-                bb = left[2] + right[2] + 0.5;
-
-                new_pix[i] = rb;
-                new_pix[i+1] = gb;
-                new_pix[i+2] = bb;
-                new_pix[i+3] = pix[i+3];
-        }
-        for(var i = 0 ; i < len; i = i+1) {
-            pix[i] = new_pix[i];
-        }
-        ctx.putImageData(frame, 0, 0);
-    }
-    </pre>
-    The beginning of this function is just like the sepia filter. We get a
-    reference <code>pix</code> to the image data in line 811, and we allocate a
-    new array <code>new_pix</code> to hold the output of the filter.
-       
-
-       
-
-       
-       
-
-       <h2><a name="face"></a> Color-based Face Detection</h2>
+        <!--
+        For a particular
+        pixel we need to grab a pixel that is some distance to the right along the
+        x-axis if we imagine the origin to be at the top-left of the frame. This distance
+        is given to us by the <code>dist</code> argument which is updated
+        everytime the 3D slider on the UI is moved. But if this distance is
+        larger than the x-position,  
+       -->
+       <!--<h2><a name="face"></a> Color-based Face Detection</h2>-->
 
 
 
