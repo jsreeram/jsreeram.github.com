@@ -78,9 +78,9 @@
           runtime into a low-level hardware abstraction layer. By leveraging
           multiple CPU cores and vector instructions, River Trail programs can achieve significant speedup over sequential JavaScript.
           The River Trail API is being considered for
-          standardization by the ECMA TC39 committee. You can read the API
-          documentation and you can follow progress on standardization here.
-
+          standardization by the ECMA TC39 committee. You can to read the <a href="http://wiki.ecmascript.org/doku.php?id=strawman:data_parallelism">API
+          documentation</a> and follow progress on standardization. You are also invited to get involved and join <a href="https://mail.mozilla.org/listinfo/es-discuss">the discussion</a>.
+          </p>
 
           <p>
           An open-source prototype implementation of River Trail for
@@ -102,10 +102,6 @@
           considered for standardization.
           </p>
 
-
-
-
-
           <h1>Basic Concepts</h1>
           <h2>
               Deterministic Parallel Execution
@@ -117,14 +113,6 @@
           type. ParallelArray objects are essentially <em> ordered collecctions of
               scalar values </em>.
 
-          <!--
-          at a high-level like Java Script arrays -
-          ordered collections of elements. Just like a Java Script array,
-          the elements in a ParallelArray can be scalar values, or other objects
-          such as other ParallelArrays, Java Script arrays or other Java Script objects.
-          However ParallelArrays differ from Java
-          Script arrays in a few important ways. ParallelArrays are:
-          -->
           <h3>Multi-Dimensional and Uniform</h3>
           <p> ParallelArray objects can represent
           multi-dimensional collections of scalars.
@@ -141,8 +129,8 @@
           <p>
           Multi-dimensional ParallelArrays are also required to be <em>uniform</em> (also called
           <em>rectangular</em>). That is, the length of all inner arrays in a
-          particular dimension must be the same. For example, <br>
-          <<0, 1>, <2>, <3, 4>> would be a non-uniform ParallelArray and is not
+          particular dimension must be the same. For example, 
+          <code>&lt;&lt;0, 1&gt;, &lt;2&gt;, &lt;3, 4&gt;&gt;</code> would be a non-uniform ParallelArray and is not
           allowed.
           </p>
           <h3>Immutable</h3>
@@ -155,7 +143,6 @@
           <script
               src="http://gist.github.com/3299719.js"></script>
           </p>
-          <h2>Elemental functions</h2>
           
           <h2> Methods </h2>
           ParallelArray objects created with the above constructors come with several methods to
@@ -317,7 +304,7 @@
           </p>
           <pre class="brush: js;first-line: 1">
           var source = new ParallelArray([1,2,2,4,2,4,5]);
-          var ones = source.map(function (v) { return 1; });
+          var ones = source.map(function one(v) { return 1; });
           </pre>
           <p>
           We can then express histogram as scattering the ones we have just produced to the correct buckets, i.e., we interpret the source data as scatter indices. 
@@ -326,17 +313,26 @@
           like:
           </p>
           <pre class="brush: js;first-line: 1">
-          var hist = ones.scatter(source, 0, function sum (a,b) { return a+b;}, 6)
+          var hist = ones.scatter(source, 0, function plus(a,b) { return a+b;}, 6)
           </pre>
           
           <h3> Filter </h3>
-
-          <!--
-          <h2> Examples </h2>
-          <h3> Sum </h3>
-          <h3> Minimum/Maximum </h3>
-          <h3> Histogram </h3>
-          -->
+          <p>
+          With <em>scatter</em>, we can now create new ParallelArray objects by reordering the elements of an existing ParallelArray object. However, the result
+          still contains all elements of the source array, modulo conflicts. We are still missing a means to simply drop elements from an array. This is where
+          the <em>filter</em> methods comes in. It expects an elemental function as its sole argument. The elemental function has the same signature as in 
+          <em>combine</em>, i.e., it gets the current index as an argument and the source object is bound to <code>this</code>. However, other than in <em>combine</em>,
+          the elemental function in <em>filter</em> is expected to return a truth value that indicates whether the source array's element at the given index 
+          position should be included in the result. Let us look at an example:
+          </p>
+          <pre class="brush: js;first-line: 1">
+          var source = new ParallelArray([1,2,3,4,5]);
+          var even = source.filter(function even(iv) { return (this.get(iv) % 2) == 0; });
+          </pre>
+          <p>
+          As before, we first produce a source array containing the values one to five. Next, we apply the <em>filter</em> method using <code>even</code> as elemental
+          function, which returns true for all even elements. Thus, we remove all odd elements from the source array, leading to the result <code>[2, 4]</code>.
+          </p>
 
           <h2> Moving on </h2>
           Now that we have an understanding of the API, let's try and <a
@@ -348,7 +344,7 @@
       <!-- FOOTER  -->
       <div id="footer_wrap" class="outer">
           <footer class="inner">
-          <p>&copy; 2012 Jaswanth Sreeram. Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+          <p>&copy; 2012 Jaswanth Sreeram, Stephan Herhut. Published with <a href="http://pages.github.com">GitHub Pages</a></p>
           </footer>
       </div>
 
